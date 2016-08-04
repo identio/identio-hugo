@@ -1,0 +1,17 @@
+baseurl = "https://identio.github.io/"
+languageCode = "en-us"
+title = "Ident.io"
+canonifyurls = true
+# Enable Google Analytics by entering your tracking id
+googleAnalytics = ""
+
+[social]
+	twitter = ""
+	github  = "identio"
+
+
+[blackfriday]
+	smartypants	= true
+	fractions = true
+	smartDashes = true
+	plainIDAnchors = true

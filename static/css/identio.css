@@ -1,0 +1,109 @@
+body {
+   padding-top:70px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+h5 {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.navbar {
+  background-color: white;
+  border-color: #6c9bdc;
+}
+
+.navbar-brand {
+  padding-top:10px;
+}
+
+.navbar-toggle {
+  border: 1px solid #6c9bdc;
+  background-color: white;
+}
+
+.navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
+    background-color: #6c9bdc;
+}
+
+.navbar-inverse .navbar-toggle {
+    border-color: #6c9bdc;
+}
+
+.navbar-inverse .navbar-toggle:focus .icon-bar, .navbar-inverse .navbar-toggle:hover .icon-bar {
+    background-color: white !important;
+}
+
+.icon-bar {
+  background-color: #6c9bdc !important;
+}
+
+.jumbotron {
+  color: #6c9bdc;
+}
+
+.jumbotron {
+  background-color: white;
+  border-bottom: 1px solid #6c9bdc;
+}
+
+.jumbotron .container {
+  text-align: center;
+}
+
+.main-logo {
+  margin-right: 30px;
+}
+
+.btn-primary {
+  background-color: #6c9bdc;
+  border-color: #6c9bdc;
+}
+
+.btn i {
+  margin-right: 5px;
+}
+
+.navbar-text a:hover {
+  color: black !important;
+  text-decoration: none;
+}
+
+.menu ul {
+  list-style-type: none;
+}
+
+.current {
+  font-weight: bold;
+}
+
+@media (max-width: 1200px) {
+  .toc {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    position: relative;
+  }
+}
+
+/* make room for the nav bar */
+h1[id],
+h2[id],
+h3[id],
+h4[id],
+h5[id],
+h6[id],
+dt[id]{
+    padding-top: 60px;
+    margin-top: -40px;
+}

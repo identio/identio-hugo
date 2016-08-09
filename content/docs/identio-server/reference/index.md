@@ -553,7 +553,7 @@ true to circumvent a bug in the way Apache encodes client certificates.
 This security mode only works when SSL is enabled on Ident.io server (cf. [SSL configuration]({{< relref "#ssl-configuration" >}}))
 {{% /callout %}}
 
-### Filtering and extracting user identifier
+#### Filtering and extracting user identifier
 
 This authentication method allows to filter the user certificates based on their
 attributes.
@@ -568,7 +568,7 @@ For example, the expression `!getExtendedKeyUsage().contains('1.3.6.1.4.1.311.20
 
 The user identifier is extracted with the same method. The expression should be specified by the `uidExpression` property.
 
-### Sample configurations
+#### Sample configurations
 
 Here is a sample configuration of a native X.509 certificate authentication method:
 

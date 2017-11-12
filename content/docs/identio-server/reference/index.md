@@ -1,51 +1,63 @@
-+++
-date = "2016-06-16T15:01:31+02:00"
-title = "Reference documentation"
-type = "doc-identio-server"
-weight = "20"
+---
+date: "2016-06-16T15:01:31+02:00"
+title: "Configuration reference"
+type: "doc-identio-server"
 
-[menu.identioServer]
-	name   = "Reference documentation"
-	url    = "/docs/identio-server/reference/"
-+++
+menu:
+  identioServer:
+    name: "Configuration reference"
+    url: "/docs/identio-server/reference/"
+    weight: -20
+---
 
 # Reference documentation
 
 This page details the configuration options of Ident.io.
-The configuration is by default located in the file `identio-config.yml` in the `config`
-directory.
+The configuration is by default located in the `identio.yml` file.
+
+Each configuration option can also be provided as a system environment variable.
+For example, the system variable `global.port` will set the TCP port to open.
 
 {{< callout title="Warning" type="warning" >}}
-As the configuration is a YAML file, be aware that the identation of each item is important.
+As the configuration is a YAML file, be aware that the indentation of each item is important.
 {{< /callout >}}
 
 The configuration is split in 5 parts:
 
 * **Global**: technical configuration of the server (ports, url, etc.)
 * **Authentication policy**: configuration of the authentication policy to apply to authentication requests
+* **Authorization**: configuration of the authorization policy.
 * **SAML Identity Provider**: configuration of the SAML Identity Provider
+* **OAuth Server**: configuration of the OAuth authorization server
 * **Session**: configuration of the session storage
 * **Authentication methods**: configuration of the authentication methods that an user can use to authenticate
 
 ## Global configuration
 
-The global configuration is defined in the `globalConfiguration` section.
+The global configuration is defined in the `global` section.
 
-### Host and port
+### Public URL and port
 
-* `port`: TCP port to open (default: `10080`).
-* `publicFqdn`: Public fully qualified domain name of the server. This is the url that end-users
-will use to access the authentication server.
-* `workDirectory`: A directory where the SSL Keystore of the embedded application
-server will be created (default: the directory hosting the configuration).
+* `port`: TCP port to open (default: `10080` for HTTP, `10443` for HTTPS).
+* `basePublicUrl`: Public fully qualified domain name of the server. This is the url that end-users
+will use to access the server.
 
 ### SSL configuration
 
 As a pre-requisite to enable SSL, you have to generate a valid certificate in PKCS12 format.
 
 * `secure`: Set to `true` to enable SSL on the server (default: `false`).
-* `keystorePath`: Path to the PKCS12 file containing the SSL certificate for the server.
-* `keystorePassword`: Password of the PKCS12 file.
+* `sslKeystorePath`: Path to the PKCS12 file containing the SSL certificate for the server
+(default: `config/ssl-certificate.p12`).
+* `sslKeystorePassword`: Password of the PKCS12 file (default: `password`).
+
+### Digital signature configuration
+
+Those parameters configure the keystore used in digital signatures of SAML or JWT tokens.
+
+* `signatureKeystorePath`: Path to the PKCS12 file containing the signing certificate for the server
+(default: `config/default-sign-certificate.p12`).
+* `signatureKeystorePassword`: Password of the PKCS12 file (default: `password`).
 
 ### Miscellaneous
 
@@ -57,27 +69,26 @@ if you want to customize the UI of the server (default: `ui` directory)
 Here is a sample configuration for this section:
 
 ```yaml
-globalConfiguration:
-  keystorePath: /opt/identio/config/idp.identio.net.p12
-  keystorePassword: password
+global:
+  sslKeystorePath: /opt/identio/config/idp.identio.net.p12
+  sslKeystorePassword: password
+  signatureKeystorePath: /opt/identio/config/sign-certificate.p12
+  signatureKeystorePassword: password  
   port: 443
-  publicFqdn: https://idp.identio.net
+  basePublicUrl: https://idp.identio.net
   secure: true
-  workDirectory: /opt/identio/config
   staticResourcesPath: /opt/identio/ui
 ```
 
 ## Authentication policy configuration
 
-The authentication policy is defined in the `authPolicyConfiguration` section.
+The authentication policy is defined in the `authPolicy` section.
 
 ### Authentication levels configuration
 
 The authentication levels are defined in the `authLevels` property.
 
 This is a list of the authentication levels you want to handle, ordered from the weakest to the strongest.
-Each item of the list start with an anchor (name prefixed with `&`), in order to be used as a reference
-elsewhere in the configuration.
 
 Each authentication levels has two properties:
 
@@ -92,8 +103,7 @@ is usable to determine which authentication level to apply.
 
 The default authentication level has two properties:
 
-* `authLevel`: A reference to a authentication level declared in the previous section.
-It must start with a `*` character (denoting a reference in YAML)
+* `authLevel`: The name of the authentication level declared in the previous section.
 * `comparison`: Used by the authentication server to determine which authentication methods
 to propose to the user. The authentication server compares the default authentication level and the different declared
 authentication method and chose the correct one based on the value on this parameter.
@@ -105,9 +115,9 @@ This parameter has 4 possible valid values:
 
 ### Configure a specific authentication level for an application
 
-You can configure a specific authentification level for an application that will override both the authentication level requested by the application (if any) or the default authentification level.
+You can configure a specific authentication level for an application that will override both the authentication level requested by the application (if any) or the default authentication level.
 
-This behaviour is configured through the ´applicationSpecificAuthLevel´ parameter. This parameter is a list.
+This behavior is configured through the ´applicationSpecificAuthLevel´ parameter. This parameter is a list.
 
 An application specific authentication level has 3 properties:
 
@@ -122,29 +132,32 @@ The meaning of `authLevel` and `comparison` is the same as in the previous secti
 Here is a sample configuration for this section:
 
 ```yaml
-authPolicyConfiguration:
+authPolicy:
   authLevels:
-    - &low
-      name: low
+    - name: low
       urn: urn:identio:auth-level:low
-    - &medium
-      name: medium
+    - name: medium
       urn: urn:identio:auth-level:medium
-    - &strong
-      name: strong
+    - name: strong
       urn: urn:identio:auth-level:strong
   defaultAuthLevel:
-    authLevel: *medium
+    authLevel: medium
     comparison: minimum
   applicationSpecificAuthLevel:
     - appName: http://sp1.identio.net:8080/sp/SAML2
-      authLevel: *medium
+      authLevel: medium
       comparison: minimum
 ```
 
+## Authorization configuration
+
+The authorization policy is configured in the `authorization` section.
+
+TODO
+
 ## SAML Identity Provider configuration
 
-The SAML Identity provider is configured in the `samlIdpConfiguration` section.
+The SAML Identity provider is configured in the `samlIdp` section.
 
 ### SAML protocol validation
 
@@ -177,33 +190,50 @@ Certificate validation is not recommended by OASIS for interoperability reasons.
 Here is a sample configuration for this section:
 
 ```yaml
-authPolicyConfiguration:
-  authLevels:
-    - &low
-      name: low
-      urn: urn:identio:auth-level:low
-    - &medium
-      name: medium
-      urn: urn:identio:auth-level:medium
-    - &strong
-      name: strong
-      urn: urn:identio:auth-level:strong
-  defaultAuthLevel:
-    authLevel: *medium
-    comparison: minimum
-  applicationSpecificAuthLevel:
-    - appName: http://sp1.identio.net:8080/sp/SAML2
-      authLevel: *medium
-      comparison: minimum
+samlIdp:
+  allowUnsecureRequests: true
+  allowedTimeOffset: 1
+  certificateCheckEnabled: true
+  contactPersonEmail: support@identio.net
+  contactPersonSurname: Ident.io Support
+  organizationDisplayName: Ident.io IDP
+  organizationName: Ident.io IDP
+  organizationUrl: http://identio.net
+  spMetadataDirectory: /opt/identio/config/sp/
+  tokenValidityLength: 3
 ```
+
+## OAuth Server configuration
+
+The OAuth server is configured in the `oAuthServer` section.
+
+The following parameters can be set:
+
+* `actorsFile`: Path to the file defining clients and resource servers (default: `config/oauth-clients.yml`).
+* `dataSource`: Name of the datasource where tokens and codes are stored. If omitted,
+everything is stored in memory.
+* `jwtToken`: Set to `true` to generate access token in JWT format (default: `false`)
+
+### Sample configuration
+
+```yaml
+oAuthServer:
+  clientFile: /opt/identio/config/oauth-clients.yml
+
+  jwtToken: true
+```
+
+### Actors file configuration
+
+TODO
 
 ## Session configuration
 
-The user session is configured in the `samlIdpConfiguration` section.
+The user session is configured in the `session` section.
 
 The session is stored in memory.
 
-This section is composed of 1 parameter (for now):
+This section is composed of 1 parameter:
 
 * `duration`: Period in minutes of user inactivity after which the session will be destroyed.
 
@@ -212,13 +242,13 @@ This section is composed of 1 parameter (for now):
 Here is a sample configuration for this section:
 
 ```yaml
-sessionConfig:
+session:
   duration: 120
 ```
 
 ## Authentication methods configuration
 
-The different authentication methods are configured in the `authMethodConfiguration` section.
+The different authentication methods are configured in the `authMethods` section.
 
 Ident.io server currently supports 5 authentication methods types out-of-the-box:
 
@@ -228,21 +258,15 @@ Ident.io server currently supports 5 authentication methods types out-of-the-box
 * **SAML**: Authentication delegated to another SAML 2.0 compliant Identity Provider. Ident.io server acts as a SAML 2.0 IDP Proxy. This method also offers a flexible way to map authentication levels between the remote Identity Provider and Ident.io.
 * **X.509 Certificates**: Authentication based on X.509 certificates. This method offers a powerful mean to analyse attributes
 
-{{% callout title="Authentication methods naming" type="info" %}}
-Each authentication method starts with an anchor (name prefixed with `&`), in order to be used as a reference
-elsewhere in the configuration.
-{{% /callout %}}
-
 ### Local authentication
 
-The Local authentication methods are configured in the `localAuthMethods` section.
+The Local authentication methods are configured in the `local` section.
 
 The following options can be set:
 
 * `name`: Display name of the authentication method.
-* `authLevel`: A reference to a authentication level declared in a previous section.
-It must start with a `*` character (denoting a reference in YAML)
-* `userFilePath`: Path to the YAML file containing the users definitions (default: `users.yml` in the config directory)
+* `authLevel`: The name of an authentication level declared in a previous section.
+* `userFilePath`: Path to the YAML file containing the users definitions (default: `config/users.yml`)
 
 #### Adding users
 
@@ -255,7 +279,7 @@ You can use the `password-generator` utility in the `bin` directory to generate 
 
 On UNIX systems:
 ```sh
-$ bin\password-generator
+$ bin/password-generator
 ```
 
 On Windows systems:
@@ -269,23 +293,21 @@ Here is a sample configuration for this section:
 
 ```yaml
 localAuthMethods:
-  - &local
-    name: Local
-    authLevel: *medium
+  - name: Local
+    authLevel: medium
     userFilePath: /opt/identio/config/users.yml
 ```
 
 ### LDAP authentication
 
-The LDAP authentication methods are configured in the `ldapAuthMethods` section.
+The LDAP authentication methods are configured in the `ldap` section.
 
 #### Common configuration options
 
 The following options can be set:
 
 * `name`: Display name of the authentication method.
-* `authLevel`: A reference to a authentication level declared in a previous section.
-It must start with a `*` character (denoting a reference in YAML)
+* `authLevel`: The name of an authentication level declared in a previous section.
 * `baseDn`: Base DN of the LDAP directory.
 * `ldapUrl`: A list containing the LDAP servers URLs. The hosts will
 be tried successively in case of a timeout or error.
@@ -319,32 +341,31 @@ The value `-1` should be used if you don't want to close idle connections.
 Here is a sample configuration for this section:
 
 ```yaml
-ldapAuthMethods:
-- &corpLDAP
-    name: Corporate LDAP
-    authLevel: *medium
-    baseDn: c=identio
-    ldapUrl:
-      - ldaps://myldap1:636
-      - ldaps://myldap2:636
-    proxyUser: cn=proxyUser,ou=applications,c=identio
-    proxyPassword: $5hG!s2Am9&#
-    trustCert: /opt/identio/config/ldap-trust-ca.crt
-    userSearchFilter: (&(objectclass=person)(cn=#UID))
-    poolConfig:
-      maxIdleConnections: 8
-      minEvictableIdleTime: -1
-      minIdleConnections: 4
-      numTestsPerEvictionRun: 4
-      testOnBorrow: true
-      testRequestFilter: (objectclass=*)
-      testWhileIdle: true
-      timeBetweenEvictionRuns: 60
+ldap:
+- name: Corporate LDAP
+  authLevel: *medium
+  baseDn: c=identio
+  ldapUrl:
+    - ldaps://myldap1:636
+    - ldaps://myldap2:636
+  proxyUser: cn=proxyUser,ou=applications,c=identio
+  proxyPassword: $5hG!s2Am9&#
+  trustCert: /opt/identio/config/ldap-trust-ca.crt
+  userSearchFilter: (&(objectclass=person)(cn=#UID))
+  poolConfig:
+    maxIdleConnections: 8
+    minEvictableIdleTime: -1
+    minIdleConnections: 4
+    numTestsPerEvictionRun: 4
+    testOnBorrow: true
+    testRequestFilter: (objectclass=*)
+    testWhileIdle: true
+    timeBetweenEvictionRuns: 60
 ```
 
 ### Radius authentication
 
-The Radius authentication methods are configured in the `radiusAuthMethods` section.
+The Radius authentication methods are configured in the `radius` section.
 This authentication method supports the specific challenges sent by the RSA SecurID®
 Radius server.
 
@@ -353,8 +374,7 @@ Radius server.
 The following options can be set:
 
 * `name`: Display name of the authentication method.
-* `authLevel`: A reference to a authentication level declared in a previous section.
-It must start with a `*` character (denoting a reference in YAML)
+* `authLevel`: The name of an authentication level declared in a previous section.
 * `authPort`: Port of the Radius authentication service.
 * `accountPort`: Port of the Radius accounting service.
 * `radiusHost`: A list containing the radius server hostnames. The hosts will
@@ -367,9 +387,8 @@ be tried successively in case of a timeout.
 Here is a sample configuration for this section:
 
 ```yaml
-radiusAuthMethods:
-  - &securID
-    name: SecurID
+radius:
+  - name: SecurID
     authLevel: *strong
     authPort: 1812
     accountPort: 1813
@@ -382,7 +401,7 @@ radiusAuthMethods:
 
 ### SAML authentication: Identity Provider Proxying
 
-The SAML authentication methods are configured in the `samlAuthMethods` section.
+The SAML authentication methods are configured in the `saml` section.
 This section is a list, you can include multiple authentication methods, if you want
 to delegate authentication to multiple Identity Providers.
 
@@ -416,8 +435,8 @@ An example configuration could be:
 
 ```yaml
 out:
-  *strong: urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract
-  *medium: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+  strong: urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract
+  medium: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
 ```
 
 This configuration means that this remote Identity Provider will appear on the logon
@@ -443,13 +462,12 @@ An example configuration could be:
 
 ```yaml
 in:
-  urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract: *strong
-  urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport: *medium
+  urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract: strong
+  urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport: medium
 ```
 
 This configuration means that a response sporting `urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract`
-authentication context will be map to a `strong` authentication level (note the `*` character denoting a reference
-to an internal authentication level).
+authentication context will be map to a `strong` authentication level.
 Similarly, a response sporting `urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport`
 authentication context will be map to a `medium` authentication level.
 
@@ -459,25 +477,24 @@ Here is a sample configuration for this section:
 
 ```yaml
 samlAuthMethods:
-  - &remoteIDP
-    name: Remote Identity Provider
+  - name: Remote Identity Provider
     certificateCheckEnabled: false
     logoFileName: /opt/identio/config/trusted-idp/remote-idp.jpg
     metadata: /opt/identio/config/trusted-idp/remote-idp.xml
     samlAuthMap:
       in:
-        urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract: *strong
-        urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport: *medium
+        urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract: strong
+        urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport: medium
       out:
-        *strong: urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract
-        *very-weak: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
-        *medium: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
-        *weak: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+        strong: urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract
+        very-weak: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+        medium: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+        weak: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
 ```
 
 ### X.509 Certificate authentication
 
-The X.509 authentication methods are configured in the `x509AuthMethods` section.
+The X.509 authentication methods are configured in the `x509` section.
 This section is a list, you can include multiple authentication methods
 (for example, one for software certificates and one for certificates embedded in a smartcard
 or if you want to handle several client certificate authorities).
@@ -489,7 +506,7 @@ be checked before displaying the login screen.
 The following options can be set:
 
 * `name`: Display name of the authentication method.
-* `authLevel`: A reference to a authentication level declared in a previous section.
+* `authLevel`: The name of an authentication level declared in a previous section.
 It must start with a `*` character (denoting a reference in YAML)
 * `clientCertTrust`: The path to the client Certificate Autority that will be used
 to validate the end-user certificate.
@@ -573,10 +590,9 @@ The user identifier is extracted with the same method. The expression should be 
 Here is a sample configuration of a native X.509 certificate authentication method:
 
 ```yaml
-x509AuthMethods:
-- &softCert
-  name: Soft Certificate
-  authLevel: *medium
+x509:
+- name: Soft Certificate
+  authLevel: medium
   security: native
   clientCertTrust: /opt/identio/config/client-ca.crt
   conditionExpression: !getExtendedKeyUsage().contains('1.3.6.1.4.1.311.20.2.2') and getExtendedKeyUsage().contains('1.3.6.1.5.5.7.3.2')
@@ -586,10 +602,9 @@ x509AuthMethods:
 The same configuration, but with an Apache reverse proxy handling the SSL endpoint, configured with a shared secret:
 
 ```yaml
-x509AuthMethods:
-- &softCert
-  name: Soft Certificate
-  authLevel: *medium
+x509:
+- name: Soft Certificate
+  authLevel: medium
   security: shared-secret
   apacheFix: true
   certHeaderName: User-Cert
@@ -604,10 +619,9 @@ Again, the same configuration, but with an Apache reverse proxy handling the SSL
 authenticated through SSL:
 
 ```yaml
-x509AuthMethods:
-- &softCert
-  name: Soft Certificate
-  authLevel: *medium
+x509:
+- name: Soft Certificate
+  authLevel: medium
   security: ssl
   apacheFix: true
   proxyCertTrust: /opt/identio/config/proxy-ca.crt

@@ -1,17 +1,18 @@
-+++
-date = "2016-06-16T15:01:31+02:00"
-title = "Getting started"
-type = "doc-identio-server"
-weight = "10"
+---
+date: "2016-06-16T15:01:31+02:00"
+title: "Getting started"
+type: "doc-identio-server"
 
-[menu.identioServer]
-	name   = "Getting started"
-	url    = "/docs/identio-server/getting-started/"
-+++
+menu:
+  identioServer:
+    name: "Getting started"
+    url: "/docs/identio-server/getting-started/"
+    weight: -50
+---
 
 # Getting started
 
-This page will guide you through the installation process of a simple Identity Provider.
+This page will guide you through the installation process of a simple instance.
 
 {{< callout title="Warning" type="warning" >}}
 Be aware that this setup is useful in a development or demo environment, but should not be used as-is
@@ -33,23 +34,23 @@ and unzip the content on the filesystem.
 
 ### Prepare the environment
 
-Edit the configuration file `identio-config.yml` that can be found in the `config` directory and set
+Edit the configuration file `identio.yml` that can be found in the `config` directory and set
 the public hostname of your machine:
 ```yaml
-globalConfiguration:
-  publicFqdn: http://<your_hostname>:10080
+global:
+  basePublicUrl: http://<your_hostname>:10080
 ```
 
 ### Start the server
 
 On UNIX systems:
 ```sh
-bin/identio-server --identio.config=config/identio-config.yml
+bin/identio-server --identio.config=config
 ```
 
 On Windows systems:
 ```sh
-bin/identio-server.bat --identio.config=config\identio-config.yml
+bin/identio-server.bat --identio.config=config
 ```
 
 This will start a HTTP server listening on port 10080.

@@ -3,9 +3,11 @@
 <ul>
 
   {{ range .Site.Menus.identioServer.ByWeight }}
-  {{ $.Scratch.Set "currentMenuEntry" . }}
 
-  <li>
+    {{ $.Scratch.Set "currentMenuEntry" . }}
+
+    <li>
+
     {{ if .HasChildren }}
       <span class="section">{{ .Name | title }}</span>
       <ul>
@@ -14,12 +16,12 @@
           {{ $.Scratch.Set "currentMenuEntry" . }}
           {{ partial "nav_link" $currentNode }}
 
-          {{ end }}
-        </ul>
-      {{ else }}
-        {{ partial "nav_link" $currentNode }}
-      {{ end }}
-  </li>
-{{ end }}
+        {{ end }}
+      </ul>
+    {{ else }}
+      {{ partial "nav_link" $currentNode }}
+    {{ end }}
+    </li>
+  {{ end }}
 
 </ul>

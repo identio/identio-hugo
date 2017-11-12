@@ -4,6 +4,8 @@ title = "Ident.io"
 canonifyurls = true
 # Enable Google Analytics by entering your tracking id
 googleAnalytics = ""
+publishDir = "../identio.github.io"
+
 
 [social]
 	twitter = ""

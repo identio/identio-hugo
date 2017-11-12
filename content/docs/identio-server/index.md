@@ -1,24 +1,25 @@
-+++
-date = "2016-06-16T14:03:11+02:00"
-title = "Ident.io Server documentation"
-type = "doc-identio-server"
-weight = "0"
+---
+date: "2016-06-16T14:03:11+02:00"
+title: "Ident.io Server documentation"
+type: "doc-identio-server"
 
-[menu.identioServer]
-	name   = "Introduction"
-	url    = "/docs/identio-server/"
-	weight = 0
-+++
+menu:
+  identioServer:
+    name: "Introduction"
+    url: "/docs/identio-server/"
+    weight: -100
+---
 
 # Ident.io documentation
 
 ## What is Ident.io Server ?
 
-Ident.io Server is a lightweight authentication and SSO server written in Java.
-It provides (for now) an implementation of a SAML 2.0 Identity Provider.
+Ident.io Server is a lightweight authentication, authorization and SSO server.
+It provides an implementation of a SAML 2.0 Identity Provider and an OAuth 2.0
+authorization server.
 It aims to be portable, simple to configure and performant.
 
-## Features
+## Main Features
 
 ### Flexible authentication policy
 
@@ -47,3 +48,55 @@ following a "batteries included but removable" design.
 
 It can be deployed as a standalone in-memory application on a developer workstation
 or as a full high-availability solution with load-balancing.
+
+### Cloud Native architecture
+
+Ident.io Server is designed from the ground up to be deployed in a cloud environment.
+An official Docker image is provided.
+
+## Support Matrix
+
+### Authentication backends
+
+The following authentication backends are supported:
+
+* LDAPv3 directory
+* Radius (including RSA SecurID)
+* Local filesystem
+* X.509 Certificates
+
+### Social Login
+
+Authentication can be delegated to the following services:
+
+* Any SAML 2.0 compliant authentication server
+
+### Configuration backend
+
+The following configuration backends are supported:
+
+* Local filesystem
+* Git repository
+* [Hashicorp Vault](https://www.vaultproject.io/) Server for storing secrets
+* [Spring Cloud Config Server](https://cloud.spring.io/spring-cloud-config/)
+* System environment variables (useful in a container deployment)
+
+### SAML 2.0
+
+The server supports the SAML 2.0 Web Browser SSO Profile of SAML 2.0.
+
+### OAuth 2.0
+
+The following features are supported:
+
+* OAuth 2.0 Core ([RFC 6749](https://tools.ietf.org/html/rfc6749))
+* OAuth 2.0 Token Introspection ([RFC 7662](https://tools.ietf.org/html/rfc7662))
+* Proof Key for Code Exchange ([RFC7636](https://tools.ietf.org/html/rfc7636))
+
+## Roadmap
+
+The roadmap of the next releases of Ident.io server can be found on [Github](https://github.com/identio/identio-server/milestones).
+
+## Community
+
+If you have an issue, question or an enhancement suggestion, please submit it on the project page on  [Github](https://github.com/identio/identio-server/issues).

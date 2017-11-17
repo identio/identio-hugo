@@ -28,9 +28,10 @@ The configuration is split in 5 parts:
 * **Authentication policy**: configuration of the authentication policy to apply to authentication requests
 * **Authorization**: configuration of the authorization policy.
 * **SAML Identity Provider**: configuration of the SAML Identity Provider
-* **OAuth Server**: configuration of the OAuth authorization server
+* **OAuth server**: configuration of the OAuth authorization server
 * **Session**: configuration of the session storage
 * **Authentication methods**: configuration of the authentication methods that an user can use to authenticate
+* **Data sources**: configuration of the different data-sources used by modules of the application
 
 ## Global configuration
 
@@ -153,7 +154,32 @@ authPolicy:
 
 The authorization policy is configured in the `authorization` section.
 
-TODO
+In this section, you can define the authorization scopes that are managed by the authorization server.
+
+Each scope is declared in the `scopes` section and contains the following informations:
+
+* `name`: Name of the scope
+* `authLevel`: Name of the authentication level of the end-user that is necessary to get this scope
+* `expirationTime`: Maximum time to live in seconds of an access token containing this scope
+* `description`: A list of descriptions of the scope for end-users. Each item of the list is the description in a specific locale.
+
+### Sample configuration
+
+Here is a sample configuration for this section:
+
+```yaml
+authorization:
+  scopes:
+    - name: scope.test.1
+      authLevel: medium
+      expirationTime: 2400
+      description:
+        fr: Accéder à scope test 1
+        en: Access scope test 1
+    - name: scope.test.2
+      authLevel: strong
+      expirationTime: 3600
+```
 
 ## SAML Identity Provider configuration
 
@@ -211,7 +237,7 @@ The following parameters can be set:
 
 * `actorsFile`: Path to the file defining clients and resource servers (default: `config/oauth-clients.yml`).
 * `dataSource`: Name of the datasource where tokens and codes are stored. If omitted,
-everything is stored in memory.
+everything is stored in memory. Only JDBC data sources are supported for now.
 * `jwtToken`: Set to `true` to generate access token in JWT format (default: `false`)
 
 ### Sample configuration
@@ -219,13 +245,79 @@ everything is stored in memory.
 ```yaml
 oAuthServer:
   clientFile: /opt/identio/config/oauth-clients.yml
-
+  dataSource: jdbc-database
   jwtToken: true
 ```
 
 ### Actors file configuration
 
-TODO
+The actors file contains two sections. One for the clients and one for the resource servers.
+
+The clients are declared in the `clients` section.
+
+The following properties can be set for each client:
+
+* `name`: Name of the client
+* `clientId`: Client Id of the client
+* `clientSecret`: Client secret of the client
+* `allowedScopes`: List of all the scope names that the client is allowed to request.
+* `responseUri`: List of valid callback urls for sending responses
+* `allowedGrants`: List of grants that the client is allowed to use. The server allows this grants:
+    * `token`: Implicit grant
+    * `authorization_code`: Authorization code grant
+    * `refresh_token`: Refresh token grant
+    * `client_credentials`: Client credentials grant
+    * `password`: Resource owner credentials grant. The `resourceOwnerAuthMethod` configuration property must be set when
+    enabling this grant.
+* `consentNeeded`: Indicates if an user consent is needed for each scope requested by this client
+* `resourceOwnerAuthMethod`: Name of the authentication method to use when the resource owner credentials flow is invoked by this client.
+
+
+The resource servers are declared in the `resourceServers` section.
+
+The following properties can be set for each resource server:
+
+* `name`: Name of the client
+* `clientId`: Client Id of the client
+* `clientSecret`: Client secret of the client
+
+A sample actors file may look like this:
+
+```yaml
+clients:
+  - name: Test Client
+    clientId: test
+    clientSecret: test
+    allowedScopes:
+      - scope.test.1
+      - scope.test.2
+    responseUri:
+      - http://example.com/cb
+    allowedGrants:
+      - token
+    consentNeeded: true
+  - name: Test Client 2
+    clientId: test2
+    clientSecret: test2
+    allowedScopes:
+      - scope.test.1
+      - scope.test.2
+    responseUri:
+      - http://example.com/cb
+    allowedGrants:
+      - token
+      - authorization_code
+      - refresh_token
+      - client_credentials
+      - password
+    consentNeeded: true
+    resourceOwnerAuthMethod: Local
+
+resourceServers:
+  - name: Test API
+    clientId: rs1
+    clientSecret: rs1
+```
 
 ## Session configuration
 
@@ -274,6 +366,12 @@ You can add arbitrary users in the user file. All users should be added in the `
 
 * `userId`: Identifier of the user
 * `password`: Password of the user. It can be either in plaintext or hashed via the Bcrypt algorithm.
+
+Plain-text passwords are prefixed by the `{plain}` keyword, Bcrypt passwords by `{bcrypt}`.
+
+{{< callout title="Warning" type="warning" >}}
+Don't forget to put the password between quotes, as the '{' character would be interpreted by the configuration parser.
+{{< /callout >}}
 
 You can use the `password-generator` utility in the `bin` directory to generate a BCrypt hashed password.
 
@@ -507,7 +605,6 @@ The following options can be set:
 
 * `name`: Display name of the authentication method.
 * `authLevel`: The name of an authentication level declared in a previous section.
-It must start with a `*` character (denoting a reference in YAML)
 * `clientCertTrust`: The path to the client Certificate Autority that will be used
 to validate the end-user certificate.
 
@@ -630,4 +727,34 @@ x509:
   clientCertTrust: /opt/identio/config/client-ca.crt
   conditionExpression: !getExtendedKeyUsage().contains('1.3.6.1.4.1.311.20.2.2') and getExtendedKeyUsage().contains('1.3.6.1.5.5.7.3.2')
   uidExpression: getSubjectAlternativeNames()[2][1]
+```
+
+## Data sources configuration
+
+Data sources of the application are defined in the `data` section.
+
+The `datasources` sub-section contains a list of all declared data sources in the application.
+
+Each data source has the following properties:
+
+* `name`: Name of the data source
+* `type`: Type of the data source. The only valid value for now is `jdbc`.
+* `driver`: Name of the driver to use for this data source.
+* `url`: Url to connect to the data source.
+* `username`: Username of the technical account to connect to the data source.
+* `password`: Corresponding password.
+
+### Sample configuration
+
+Here is a sample configuration for this section:
+
+```yaml
+data:
+  dataSources:
+    - name: Local
+      type: jdbc
+      driver: org.h2.Driver
+      url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+      username: sa
+      password: sa
 ```

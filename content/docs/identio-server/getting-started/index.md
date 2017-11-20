@@ -41,6 +41,32 @@ global:
   basePublicUrl: http://<your_hostname>:10080
 ```
 
+### Declare a SAML client
+
+#### Fetch the IDP metadata
+
+The metadata of the Identity Provider can be fetched by accessing the URL `http://<your_hostname>:10080/SAML2`
+
+#### Copy the Service Provider Metadata
+
+To configure a Service Provider, just copy the metadata of your Service Provider in the `config/trusted-sp` folder.
+Ident.io server periodically scans for new metadatas in this directory and will automatically load the file.
+
+### Declare a OAuth client and resource server
+
+#### Configure the OAuth server
+
+The configuration file `oauth-actors.yml` that can be found in the `config` directory is configured with a test client
+and a test resource server. Just edit the `responseUri` parameter of the client to match the callback url of your client.
+
+#### Configure your client
+
+Ident.io publishes the following endpoints for clients and resource servers:
+
+* `/oauth/authorize`: Authorization endpoint
+* `/oauth/token`: Token endpoint
+* `/oauth/introspect`: Introspection endpoint for resource servers
+
 ### Start the server
 
 On UNIX systems:
@@ -55,17 +81,8 @@ bin/identio-server.bat --identio.config=config
 
 This will start a HTTP server listening on port 10080.
 
-### Fetch the IDP metadata
-
-The metadata of the Identity Provider can be fetched by accessing the URL `http://<your_hostname>:10080/SAML2`
-
-### Copy the Service Provider Metadata
-
-To configure a Service Provider, just copy the metadata of your Service Provider in the `config/trusted-sp` folder.
-Ident.io server periodically scans for new metadatas in this directory and will automatically load the file.
-
 ### Test the setup
 
-Access your Service Provider and you should be redirected to Ident.io server.
+Access your Service Provider or client application and you should be redirected to Ident.io server.
 The sample configuration uses a local authentication file containing one test user.
 The login and password are `johndoe` / `password`.

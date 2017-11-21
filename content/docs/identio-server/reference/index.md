@@ -279,7 +279,8 @@ The following properties can be set for each resource server:
 
 * `name`: Name of the client
 * `clientId`: Client Id of the client
-* `clientSecret`: Client secret of the client
+* `clientSecret`: Client secret of the client. It can be either in plaintext or hashed via the Bcrypt algorithm
+(for more information, see [Local Authentication - Adding users]({{< relref "#adding-users" >}}) ) .
 
 A sample actors file may look like this:
 
@@ -287,7 +288,7 @@ A sample actors file may look like this:
 clients:
   - name: Test Client
     clientId: test
-    clientSecret: test
+    clientSecret: "{plain}test"
     allowedScopes:
       - scope.test.1
       - scope.test.2
@@ -298,7 +299,7 @@ clients:
     consentNeeded: true
   - name: Test Client 2
     clientId: test2
-    clientSecret: test2
+    clientSecret: "{plain}test2"
     allowedScopes:
       - scope.test.1
       - scope.test.2
@@ -316,7 +317,7 @@ clients:
 resourceServers:
   - name: Test API
     clientId: rs1
-    clientSecret: rs1
+    clientSecret: "{plain}rs1"
 ```
 
 ## Session configuration
